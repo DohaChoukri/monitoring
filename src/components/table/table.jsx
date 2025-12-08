@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
-
+import { Badge } from "@/components/ui/badge";
 import "../../assets/css/table.css";
 
 import {
@@ -10,124 +10,149 @@ import {
   ClientSideRowModelModule,
   ModuleRegistry,
   ValidationModule,
+  RowSelectionModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
 } from "ag-grid-community";
-
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 ModuleRegistry.registerModules([
   CellStyleModule,
   ClientSideRowModelModule,
+  RowSelectionModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
   ...(process.env.NODE_ENV !== "production" ? [ValidationModule] : []),
 ]);
 
 import CustomButtonComponent from "./customButtonComponent.jsx";
-import MissionResultRenderer from "./missionResultRenderer.jsx";
-
 import rawClients from "@/assets/json/client.json";
 
-/**
- * GridExample
- * Props:
- *  - onGridReady: function(api) called when ag-Grid is ready (receives api)
- */
 const GridExample = ({ onGridReady: onGridReadyProp }) => {
   const containerStyle = useMemo(() => ({ width: "100%", height: "600px" }), []);
   const gridStyle = useMemo(() => ({ height: "100%", width: "100%" }), []);
+  const [clients, setClients] = useState(rawClients[0].Clients || []);
 
-  // Normalize possible json shapes:
-  // - [{ "Clients": [ ... ] }]
-  // - [ ... ] (array of objects)
-  // - { "Clients": [...] }
-  let rowData = [];
-  if (Array.isArray(rawClients) && rawClients.length > 0 && rawClients[0].Clients) {
-    rowData = rawClients[0].Clients;
-  } else if (Array.isArray(rawClients)) {
-    rowData = rawClients;
-  } else if (rawClients && rawClients.Clients) {
-    rowData = rawClients.Clients;
-  } else {
-    rowData = [];
+  const handleSaveStatut = (updatedClient) => {
+    console.log("Client mis à jour :", updatedClient);
+    setClients(prev =>
+      prev.map(c =>
+        c.id === updatedClient.id ? updatedClient : c
+      )
+    );
+  };
+
+  const defaultColDef = useMemo(() => ({
+    sortable: true,
+    filter: true,
+    resizable: true,
+    flex: 1,
+    minWidth: 80,
+  }), []);
+
+  function normalizeStatus(value) {
+    if (!value) return "";
+    const v = String(value).trim().toLowerCase();
+    if (["1", "à visiter", "a visiter", "avisite"].includes(v)) return "à visiter";
+    if (["2", "visité en cours", "visite en cours"].includes(v)) return "visité en cours";
+    if (["3", "visité", "visite"].includes(v)) return "visité";
+    if (["4a", "visité - actif", "visite - actif"].includes(v)) return "visité - actif";
+    if (["4i", "visité - inactif", "visite - inactif"].includes(v)) return "visité - inactif";
+    if (["actif"].includes(v)) return "actif";
+    if (["inactif"].includes(v)) return "inactif";
+    return v;
   }
 
-  const defaultColDef = useMemo(
-    () => ({
-      sortable: true,
-      filter: true,
-      resizable: true,
-      flex: 1,
-      minWidth: 80,
-    }),
-    []
-  );
-
-  // AG Grid Columns
   const [columnDefs] = useState([
     { field: "id", headerName: "ID", maxWidth: 90 },
-
-    {
-      field: "nom",
-      headerName: "Nom",
-      flex: 1.2,
-      cellRenderer: (params) => (
-        <div className="flex items-center">
-          <span style={{ marginRight: 8 }}>{params.value}</span>
-        </div>
-      ),
-    },
-
+    { field: "nom", headerName: "Nom", flex: 1.2 },
     { field: "prenom", headerName: "Prénom", flex: 1 },
     { field: "ville", headerName: "Ville", flex: 1 },
     { field: "telephone", headerName: "Téléphone", flex: 1 },
-
-    {
-      field: "email",
-      headerName: "Email",
-      flex: 1.4,
-      cellRenderer: (params) => <a href={`mailto:${params.value}`}>{params.value}</a>,
-    },
-
+    { field: "email", headerName: "Email", flex: 1.4, cellRenderer: params => <a href={`mailto:${params.value}`}>{params.value}</a> },
     {
       headerName: "Statut",
       field: "statut",
-      flex: 0.8,
-      valueGetter: (p) => (p.data ? p.data.statut === "actif" : false),
-      cellRenderer: MissionResultRenderer,
-      maxWidth: 120,
+      maxWidth: 150,
+      flex: 1,
+      cellRenderer: (params) => {
+        const norm = normalizeStatus(params.value);
+        let variant = "default";
+        switch (norm) {
+          case "à visiter": variant = "default"; break;
+          case "visité en cours": variant = "outline"; break;
+          case "visité": variant = "success"; break;
+          case "actif": variant = "success"; break;
+          case "inactif": variant = "destructive"; break;
+        }
+
+        const [open, setOpen] = React.useState(false);
+
+        const raisonText =
+          params.data.statut.toLowerCase() === "inactif"
+            ? params.data.inactifChoice === "autre"
+              ? params.data.autreRaison
+              : params.data.inactifChoice
+            : "-";
+
+        return (
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Badge variant={variant} className="capitalize" style={{cursor: "pointer"}}>
+                {params.value}
+              </Badge>
+            </SheetTrigger>
+            <SheetContent side="bottom">
+              <SheetHeader>
+                <SheetTitle>Raison Inactif</SheetTitle>
+                <SheetDescription>{raisonText}</SheetDescription>
+              </SheetHeader>
+            </SheetContent>
+          </Sheet>
+        );
+      },
     },
 
     {
       headerName: "Actions",
       field: "actions",
       maxWidth: 160,
-      cellRenderer: CustomButtonComponent,
+      cellRenderer: (params) => {
+        if (!params.data) return null;
+        const rowStatus = normalizeStatus(params.data.statut);
+        if (rowStatus.includes("inactif")) return null;
+        return <CustomButtonComponent data={params.data} onSave={handleSaveStatut} />;
+      },
     },
   ]);
 
-  // onGridReady handler: forward the API to parent if provided
   const handleGridReady = (params) => {
-    try {
-      if (typeof onGridReadyProp === "function") {
-        onGridReadyProp(params.api);
-      }
-    } catch (err) {
-      // ignore
+    if (typeof onGridReadyProp === "function") {
+      onGridReadyProp(params.api);
     }
   };
 
   return (
-    <>
-      {/* Table */}
-      <div style={containerStyle} className="w-full p-6 flex justify-center">
-        <div style={gridStyle} className="ag-theme-alpine w-full">
-          <AgGridReact
-            rowData={rowData}
-            defaultColDef={defaultColDef}
-            columnDefs={columnDefs}
-            rowSelection="single"
-            animateRows={true}
-            onGridReady={handleGridReady}
-          />
-        </div>
+    <div style={containerStyle} className="w-full p-6 flex justify-center">
+      <div style={gridStyle} className="ag-theme-alpine w-full">
+        <AgGridReact
+          rowData={clients}
+          defaultColDef={defaultColDef}
+          columnDefs={columnDefs}
+          rowSelection={{ type: "single" }}
+          animateRows={true}
+          onGridReady={handleGridReady}
+        />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -2,15 +2,24 @@
     {
         "Clients": [
             { "id": 1, "nom": "Mohammed", "prenom": "Ali", "ville": "Casablanca", "telephone": "0612345678", "email": "m.ali@example.com", "statut": "actif" },
-            { "id": 2, "nom": "Sara", "prenom": "Bennani", "ville": "Rabat", "telephone": "0678452310", "email": "sara@example.com", "statut": "prospect" },
+            { "id": 2, "nom": "Sara", "prenom": "Bennani", "ville": "Rabat", "telephone": "0678452310", "email": "sara@example.com", "statut": "À visiter" },
             { "id": 3, "nom": "Hassan", "prenom": "El Amrani", "ville": "Marrakech", "telephone": "0654238910", "email": "hassan@example.com", "statut": "inactif" },
-            { "id": 4, "nom": "Imane", "prenom": "Lahcen", "ville": "Fès", "telephone": "0645218790", "email": "imane@example.com", "statut": "actif" },
-            { "id": 5, "nom": "Omar", "prenom": "Chakiri", "ville": "Tanger", "telephone": "0625487932", "email": "omar@example.com", "statut": "prospect" },
+            { "id": 4, "nom": "Imane", "prenom": "Lahcen", "ville": "Fès", "telephone": "0645218790", "email": "imane@example.com", "statut": "Visité en cours" },
+            { "id": 5, "nom": "Omar", "prenom": "Chakiri", "ville": "Tanger", "telephone": "0625487932", "email": "omar@example.com", "statut": "À visiter" },
             { "id": 6, "nom": "Meryem", "prenom": "Haddad", "ville": "Mohammedia", "telephone": "0612457890", "email": "meryem@example.com", "statut": "inactif" },
             { "id": 7, "nom": "Salma", "prenom": "Fahmi", "ville": "Essaouira", "telephone": "0678890011", "email": "salma@example.com", "statut": "actif" },
-            { "id": 8, "nom": "Yassine", "prenom": "Slaoui", "ville": "Agadir", "telephone": "0634789021", "email": "yassine@example.com", "statut": "prospect" },
+            { "id": 8, "nom": "Yassine", "prenom": "Slaoui", "ville": "Agadir", "telephone": "0634789021", "email": "yassine@example.com", "statut": "À visiter" },
             { "id": 9, "nom": "Rachid", "prenom": "Belkadi", "ville": "Oujda", "telephone": "0689012234", "email": "rachid@example.com", "statut": "inactif" },
-            { "id": 10, "nom": "Fatima", "prenom": "Zahra", "ville": "Laâyoune", "telephone": "0611778899", "email": "fatima@example.com", "statut": "actif" }
+            { "id": 10, "nom": "Fatima", "prenom": "Zahra", "ville": "Laâyoune", "telephone": "0611778899", "email": "fatima@example.com", "statut": "actif" },
+            { "id": 11, "nom": "Mohammed", "prenom": "Ali", "ville": "Casablanca", "telephone": "0612345678", "email": "m.ali@example.com", "statut": "actif" },
+            { "id": 12, "nom": "Sara", "prenom": "Bennani", "ville": "Rabat", "telephone": "0678452310", "email": "sara@example.com", "statut": "À visiter" },
+            { "id": 13, "nom": "Hassan", "prenom": "El Amrani", "ville": "Marrakech", "telephone": "0654238910", "email": "hassan@example.com", "statut": "inactif" },
+            { "id": 14, "nom": "Imane", "prenom": "Lahcen", "ville": "Fès", "telephone": "0645218790", "email": "imane@example.com", "statut": "actif" },
+            { "id": 15, "nom": "Omar", "prenom": "Chakiri", "ville": "Tanger", "telephone": "0625487932", "email": "omar@example.com", "statut": "À visiter" },
+            { "id": 16, "nom": "Meryem", "prenom": "Haddad", "ville": "Mohammedia", "telephone": "0612457890", "email": "meryem@example.com", "statut": "inactif" },
+            { "id": 17, "nom": "Salma", "prenom": "Fahmi", "ville": "Essaouira", "telephone": "0678890011", "email": "salma@example.com", "statut": "actif" },
+            { "id": 18, "nom": "Yassine", "prenom": "Slaoui", "ville": "Agadir", "telephone": "0634789021", "email": "yassine@example.com", "statut": "À visiter" },
+            { "id": 19, "nom": "Rachid", "prenom": "Belkadi", "ville": "Oujda", "telephone": "0689012234", "email": "rachid@example.com", "statut": "inactif" }
         ]
     }
 ]
