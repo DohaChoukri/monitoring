@@ -20,40 +20,33 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export default function CustomButtonComponent({ data, onSave }) {
-  // Valeurs originales (pour Annuler)
-  const originalStatut = data?.statut || "À visiter";
-  const originalInactifChoice = data?.inactifChoice || "";
-  const originalAutreRaison = data?.autreRaison || "";
-
-  // États locaux modifiables
-  const [statut, setStatut] = useState(originalStatut);
+  const [statut, setStatut] = useState(data?.statut || "À visiter");
   const [showDropdown, setShowDropdown] = useState(false);
   const [changes, setChanges] = useState(false);
-  const [inactifChoice, setInactifChoice] = useState(originalInactifChoice);
-  const [autreRaison, setAutreRaison] = useState(originalAutreRaison);
 
   const [idClient , setIdClient] = useState(false);
-  const [forceOpen, setForceOpen] = useState(false); // empêche fermeture accidentelle
   const [visiteEnCours, setVisiteEnCours] = useState(false);
 
-  const inactifStatut = [
+  const [inactifStatut] = useState([
     { value: "choix 1", affiche: "Choix 1" },
     { value: "choix 2", affiche: "Choix 2" },
     { value: "choix 3", affiche: "Choix 3" },
     { value: "autre", affiche: "Autre" },
-  ];
+  ]);
+
+  const [inactifChoice, setInactifChoice] = useState("");
+  const [autreRaison, setAutreRaison] = useState("");
 
   useEffect(() => {
     setIdClient(data?.id)
-    setStatut(originalStatut);
-    setInactifChoice(originalInactifChoice);
-    setAutreRaison(originalAutreRaison);
+    setStatut(data?.statut || "À visiter");
     setShowDropdown(false);
     setChanges(false);
-    setVisiteEnCours(data?.statut === "Visité en cours");
+    setInactifChoice(data?.inactifChoice || "");
+    setAutreRaison(data?.autreRaison || "");
+    setVisiteEnCours(data?.statut === "À visiter" && data?.statut === "Visité en cours");
   }, [data]);
 
-  // Variants badge
   const getBadgeVariant = () => {
     switch (statut.toLowerCase()) {
       case "à visiter": return "outline";
@@ -66,27 +59,25 @@ export default function CustomButtonComponent({ data, onSave }) {
   };
 
   const handleTryOpenSheet = (e) => {
-    // Si le client actuel a une visite en cours
-    if (visiteEnCours) {
+    console.log(idClient)
+    if (visiteEnCours && !idClient) {
       e.preventDefault();
       alert("Veuillez d'abord fermer la visite de ce client avant d'en démarrer une nouvelle.");
       return;
     }
-
-    setForceOpen(true);
   };
-  // --- ACTIONS ---
+
   const handleVisiteClick = () => {
-    let newStatut = statut;
-
-    if (statut === "À visiter") newStatut = "Visité en cours";
-    else if (statut === "Visité en cours") {
-      newStatut = "Visité";
+    if (statut === "À visiter") {
+      setStatut("Visité en cours");
+      setVisiteEnCours(true);
+      setChanges(true);
+    } else if (statut === "Visité en cours") {
+      setStatut("Visité");
       setShowDropdown(true);
+      setChanges(true);
+      setVisiteEnCours(false);
     }
-
-    setStatut(newStatut);
-    setChanges(true);
   };
 
   const handleDropdownSelect = (value) => {
@@ -95,17 +86,15 @@ export default function CustomButtonComponent({ data, onSave }) {
     setChanges(true);
   };
 
-  // 🔄 ANNULER — remet tout comme avant
   const handleReset = () => {
-    setStatut(originalStatut);
-    setInactifChoice(originalInactifChoice);
-    setAutreRaison(originalAutreRaison);
+    setStatut(data?.statut || "À visiter");
     setShowDropdown(false);
     setChanges(false);
-    setForceOpen(false);
+    setInactifChoice(data?.inactifChoice || "");
+    setAutreRaison(data?.autreRaison || "");
+    setVisiteEnCours(data?.statut === "Visité en cours");
   };
 
-  // 💾 SAUVEGARDER — applique les changements
   const handleSave = () => {
     onSave({
       ...data,
@@ -115,24 +104,23 @@ export default function CustomButtonComponent({ data, onSave }) {
         statut === "Négative" && inactifChoice === "autre" ? autreRaison : "",
     });
 
-    setChanges(false);
-    setForceOpen(false);
-  };
-
-  // 📌 Interdiction de fermer si modifications non sauvegardées
-  const preventClose = (openState) => {
-    if (!openState && changes) {
-      alert("Veuillez sauvegarder ou annuler avant de fermer.");
-      setForceOpen(true);
-      return;
+    if (statut !== "Visité en cours") {
+      setVisiteEnCours(false);
     }
-    setForceOpen(openState);
+
+    setChanges(false);
   };
 
   return (
-    <Sheet open={forceOpen} onOpenChange={preventClose}>
-      <SheetTrigger asChild onClick={() => setForceOpen(true)}>
-        <Button variant="outline" size="sm" type="button">
+    <Sheet>
+      {/* ⭐ IMPORTANT : onClick est sur le bouton pour éviter l'erreur */}
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          type="button"
+          onClick={handleTryOpenSheet}
+        >
           Démarrer visite
         </Button>
       </SheetTrigger>
@@ -148,8 +136,8 @@ export default function CustomButtonComponent({ data, onSave }) {
           </SheetDescription>
         </SheetHeader>
 
-        {/* --- INFOS CLIENT --- */}
         <div className="py-6 space-y-6">
+          {/* Informations client */}
           <div className="space-y-2">
             <h3 className="font-semibold">Informations</h3>
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -164,7 +152,7 @@ export default function CustomButtonComponent({ data, onSave }) {
             </div>
           </div>
 
-          {/* --- ACTIONS --- */}
+          {/* Gestion des actions */}
           <div className="space-y-4">
             <h3 className="font-semibold">Actions</h3>
 
@@ -184,7 +172,7 @@ export default function CustomButtonComponent({ data, onSave }) {
                 <label className="text-sm font-medium block">
                   Sélectionner le statut final:
                 </label>
-                <Select onValueChange={handleDropdownSelect}>
+                <Select onValueChange={handleDropdownSelect} value="">
                   <SelectTrigger>
                     <SelectValue placeholder="Choisir un statut..." />
                   </SelectTrigger>
@@ -202,10 +190,7 @@ export default function CustomButtonComponent({ data, onSave }) {
                 <select
                   className="w-full border rounded-md p-2"
                   value={inactifChoice}
-                  onChange={(e) => {
-                    setInactifChoice(e.target.value);
-                    setChanges(true);
-                  }}
+                  onChange={(e) => setInactifChoice(e.target.value)}
                 >
                   <option value="">-- Choisir une raison --</option>
                   {inactifStatut.map((i) => (
@@ -220,17 +205,14 @@ export default function CustomButtonComponent({ data, onSave }) {
                     className="w-full border rounded-md p-2"
                     placeholder="Préciser la raison..."
                     value={autreRaison}
-                    onChange={(e) => {
-                      setAutreRaison(e.target.value);
-                      setChanges(true);
-                    }}
+                    onChange={(e) => setAutreRaison(e.target.value)}
                   />
                 )}
               </div>
             )}
           </div>
 
-          {/* RÉSUMÉ */}
+          {/* Résumé statut */}
           <div className="space-y-2">
             <h3 className="font-semibold">Statut actuel</h3>
             <div className="p-3 bg-muted rounded-md">
@@ -246,21 +228,16 @@ export default function CustomButtonComponent({ data, onSave }) {
           </div>
         </div>
 
-        {/* FOOTER */}
         <SheetFooter className="flex justify-between">
           <Button variant="ghost" onClick={handleReset} disabled={!changes}>
             Annuler
           </Button>
-
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={!changes}>
               Sauvegarder
             </Button>
-
             <SheetClose asChild>
-              <Button variant="outline" disabled={changes}>
-                Fermer
-              </Button>
+              <Button variant="outline">Fermer</Button>
             </SheetClose>
           </div>
         </SheetFooter>
